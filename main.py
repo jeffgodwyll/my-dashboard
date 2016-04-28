@@ -1,4 +1,11 @@
+import json
+
 import twitter
+
+from urllib import urlencode
+
+from urllib3 import PoolManager
+# from urllib3.contrib.appengine import AppEngineManager, is_appengine_sandbox
 
 from flask import Flask, jsonify
 
@@ -7,6 +14,29 @@ import config
 
 app = Flask(__name__)
 app.config.from_object(config)
+
+
+@app.route('/lastfm')
+def lastfm_tracks_scrobbled():
+    body = {
+        'method': 'user.getrecenttracks',
+        'user': app.config['LASTFM_USER'],
+        'api_key': app.config['LASTFM_API_KEY'],
+        # TODO: 'from': today?,
+        'format': 'json'
+    }
+
+    # if is_appengine_sandbox():
+    # http = AppEngineManager()
+    # else:
+    http = PoolManager()
+    url = 'http://ws.audioscrobbler.com/2.0'
+    r = http.request('GET', url, body=urlencode(body))
+    resp = json.loads(r.data.decode('utf8'))
+    # interested in the total for now, till "'from': 'date' is used in request
+    tracks_scrobbled = resp['recenttracks']['@attr']['total']
+    print 'tracks_scrobbled: {}'.format(tracks_scrobbled)
+    return jsonify(tracks_scrobbled=tracks_scrobbled)
 
 
 def twitter_client():
