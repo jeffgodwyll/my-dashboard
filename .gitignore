@@ -56,3 +56,6 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# important details that should remain secret
+config.py
