@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 @app.route('/lastfm')
 def lastfm_tracks_scrobbled():
-    body = {
+    fields = {
         'method': 'user.getRecentTracks',
         'user': app.config['LASTFM_USER'],
         'api_key': app.config['LASTFM_API_KEY'],
@@ -31,7 +31,7 @@ def lastfm_tracks_scrobbled():
         http = PoolManager()
 
     url = 'http://ws.audioscrobbler.com/2.0'
-    r = http.request('GET', url, fields=body)
+    r = http.request('GET', url, fields=fields)
     resp = json.loads(r.data.decode('utf8'))
     # interested in the total for now, till "'from': 'date' is used in request
     tracks_scrobbled = resp['recenttracks']['@attr']['total']
