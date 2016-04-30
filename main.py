@@ -2,6 +2,10 @@ import simplejson as json
 import logging
 
 import twitter
+
+from oauth2client.client import GoogleCredentials
+from googleapiclient.discovery import build
+
 from urllib3 import PoolManager
 from urllib3.contrib.appengine import AppEngineManager, is_appengine_sandbox
 
@@ -14,6 +18,21 @@ app = Flask(__name__)
 app.config.from_object(config)
 
 logger = logging.getLogger(__name__)
+
+
+def get_googlefit_api():
+    credentials = GoogleCredentials.get_application_default()
+    return build('fitness', 'v1', credentials=credentials)
+
+
+@app.route('/fit')
+def google_fit():
+    service = get_googlefit_api()
+    print service.__doc__
+    request = service.users().dataSources().list(userId='me')
+    # TODO: clean up to use flow that accepts client id
+    response = request.execute()  # empty dict response, b/c of app default flow
+    return jsonify(**response)
 
 
 @app.route('/lastfm')
