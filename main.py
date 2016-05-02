@@ -72,7 +72,8 @@ def fit_again():
             http = PoolManager()
 
         r = http.request('GET', req_uri, headers=headers)
-        return jsonify(fit_data=r.data)  # r.text?
+        resp = json.loads(r.data.decode('utf-8'))
+        return jsonify(**resp)
 
 
 def get_googlefit_api():
