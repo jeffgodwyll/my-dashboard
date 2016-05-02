@@ -83,10 +83,10 @@ def get_googlefit_api():
 def google_fit():
     service = get_googlefit_api()
     print service.__doc__
-    request = service.users().dataSources().list(userId='me')
+    fit_request = service.users().dataSources().list(userId='me')
     # TODO: clean up to use flow that accepts client id
-    response = request.execute()  # empty dict response, b/c of app default flow
-    return jsonify(**response)
+    fit_response = fit_request.execute()  # empty dict, b/c of app default flow
+    return jsonify(**fit_response)
 
 
 @app.route('/lastfm')
