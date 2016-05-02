@@ -47,7 +47,6 @@ def oauth2callback():
         r = http.request_encode_body(
             'POST', 'https://www.googleapis.com/oauth2/v4/token', fields=fields,
             encode_multipart=False)
-        print 'oauth2 information returned', r.data
         session['credentials'] = r.data  # r.text?
         return redirect(url_for('fit_again'))
 
@@ -57,8 +56,6 @@ def fit_again():
     if 'credentials' not in session:
         return redirect(url_for('oauth2callback'))
     credentials = json.loads(session['credentials'])
-    print '\n \n session \n\n', session
-    print '\ncredentials are: ', credentials, '\n\n'
     if credentials['expires_in'] <= 0:
         return redirect(url_for('oauth2callback'))
     else:
@@ -84,7 +81,6 @@ def get_googlefit_api():
 @app.route('/fit')
 def google_fit():
     service = get_googlefit_api()
-    print service.__doc__
     fit_request = service.users().dataSources().list(userId='me')
     # TODO: clean up to use flow that accepts client id
     fit_response = fit_request.execute()  # empty dict, b/c of app default flow
