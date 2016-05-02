@@ -9,7 +9,7 @@ from googleapiclient.discovery import build
 from urllib3 import PoolManager
 from urllib3.contrib.appengine import AppEngineManager, is_appengine_sandbox
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, redirect, session, url_for
 
 import config
 
@@ -18,6 +18,60 @@ app = Flask(__name__)
 app.config.from_object(config)
 
 logger = logging.getLogger(__name__)
+
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    if 'code' not in request.args:
+        auth_uri = (
+            'https://accounts.google.com/o/oauth2/v2/auth?response_type=code'
+            '&client_id={}&redirect_uri={}&scope={}'.format(
+                app.config['GOOGLE_CLIENT_ID'],
+                app.config['GOOGLE_REDIRECT_URI'],
+                app.config['SCOPE']))
+        return redirect(auth_uri)
+    else:
+        auth_code = request.args.get('code')
+        fields = {'code': auth_code,
+                  'client_id': app.config['GOOGLE_CLIENT_ID'],
+                  'client_secret': app.config['GOOGLE_CLIENT_SECRET'],
+                  'redirect_uri': app.config['GOOGLE_REDIRECT_URI'],
+                  'grant_type': 'authorization_code'
+                  }
+        if is_appengine_sandbox:
+            http = AppEngineManager()
+        else:
+            http = PoolManager()
+
+        r = http.request_encode_body(
+            'POST', 'https://www.googleapis.com/oauth2/v4/token', fields=fields,
+            encode_multipart=False)
+        print 'oauth2 information returned', r.data
+        session['credentials'] = r.data  # r.text?
+        return redirect(url_for('fit_again'))
+
+
+@app.route('/fit2')
+def fit_again():
+    if 'credentials' not in session:
+        return redirect(url_for('oauth2callback'))
+    credentials = json.loads(session['credentials'])
+    print '\n \n session \n\n', session
+    print '\ncredentials are: ', credentials, '\n\n'
+    if credentials['expires_in'] <= 0:
+        return redirect(url_for('oauth2callback'))
+    else:
+        headers = {
+            'Authorization': 'Bearer {}'.format(credentials['access_token'])}
+        req_uri = 'https://www.googleapis.com/fitness/v1/users/me/dataSources'
+
+        if is_appengine_sandbox:
+            http = AppEngineManager()
+        else:
+            http = PoolManager()
+
+        r = http.request('GET', req_uri, headers=headers)
+        return jsonify(fit_data=r.data)  # r.text?
 
 
 def get_googlefit_api():
