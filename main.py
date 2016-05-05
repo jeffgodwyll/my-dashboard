@@ -47,9 +47,7 @@ def oauth2callback():
         r = http.request_encode_body(
             'POST', 'https://www.googleapis.com/oauth2/v4/token', fields=fields,
             encode_multipart=False)
-        print '\n\n\n\ r.data:', r.data
         session['credentials'] = r.data  # r.text?
-        print "\n\n\n\nsession['credentials']\n\n\n", session['credentials'], '\n\n\n\n'
         return redirect(url_for('fit_again'))
 
 
