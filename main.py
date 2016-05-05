@@ -53,60 +53,18 @@ def oauth2callback():
         return redirect(url_for('fit_again'))
 
 
-@app.route('/stackoverflow_oauth')
-def stackoverflow_oauth():
-    if 'code' not in request.args:
-        auth_uri = (
-            'https://stackexchange.com/oauth?client_id={}&scope={}&'
-            'redirect_uri={}'.format(
-                app.config['STACKOVERFLOW_CLIENT_ID'],
-                'no_expiry',
-                app.config['STACKOVERFLOW_REDIRECT_URI']))
-        print '\n\n REDIRECTING \n\n'
-        return redirect(auth_uri)
-    else:
-        auth_code = request.args.get('code')
-        print '\n\n AUTH CODE\t', auth_code, '\n\n\t'
-        fields = {'client_id': app.config['STACKOVERFLOW_CLIENT_ID'],
-                  'client_secret': app.config['STACKOVERFLOW_CLIENT_SECRET'],
-                  'code': auth_code,
-                  'redirect_uri': app.config['STACKOVERFLOW_REDIRECT_URI']}
-
-        if is_appengine_sandbox:
-            http = AppEngineManager()
-        else:
-            http = PoolManager()
-
-        r = http.request_encode_body(
-            'POST', 'https://stackexchange.com/oauth/access_token',
-            fields=fields, encode_multipart=False)
-        # r.data has the form access_token='' so a simple split on '=' returns a
-        # 2-list item which can be converted directly into a dict as below
-        resp = dict([r.data.split('=')])
-        session['stack_credentials'] = resp
-        print 'resp includes', resp
-        print '\n\n\n session info: ', session
-        return redirect(url_for('stackoverflow'))
-
-
 @app.route('/stackoverflow')
 def stackoverflow():
-    if 'stack_credentials' not in session:
-        return redirect(url_for('stackoverflow_oauth'))
+    if is_appengine_sandbox:
+        http = AppEngineManager()
     else:
-        stack_credentials = json.loads(json.dumps(session['stack_credentials']))
-
-        headers = {
-            'Authorization': stack_credentials['access_token']}
-
-        if is_appengine_sandbox:
-            http = AppEngineManager()
-        else:
-            http = PoolManager()
-        req_uri = ('https://api.stackexchange.com/2.2/me?order=desc&'
-                   'sort=reputation&site=stackoverflow')
-        r = http.request('GET', req_uri, headers=headers)
-        return jsonify(json.loads(r.data))
+        http = PoolManager()
+    req_uri = ('https://api.stackexchange.com/2.2/users/{}?order=desc&'
+               'sort=reputation&site=stackoverflow&filter={}'.format(
+                   app.config['STACKOVERFLOW_USER_ID'],
+                   '!0Z-LvhH.LNOKu1BHWnIjY_iHH'))
+    r = http.request('GET', req_uri)
+    return jsonify(json.loads(r.data))
 
 
 @app.route('/fit2')
