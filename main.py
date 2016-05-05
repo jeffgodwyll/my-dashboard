@@ -3,9 +3,6 @@ import logging
 
 import twitter
 
-from oauth2client.client import GoogleCredentials
-from googleapiclient.discovery import build
-
 from urllib3 import PoolManager
 from urllib3.contrib.appengine import AppEngineManager, is_appengine_sandbox
 
@@ -85,20 +82,6 @@ def fit_again():
         r = http.request('GET', req_uri, headers=headers)
         resp = json.loads(r.data.decode('utf-8'))
         return jsonify(**resp)
-
-
-def get_googlefit_api():
-    credentials = GoogleCredentials.get_application_default()
-    return build('fitness', 'v1', credentials=credentials)
-
-
-@app.route('/fit')
-def google_fit():
-    service = get_googlefit_api()
-    fit_request = service.users().dataSources().list(userId='me')
-    # TODO: clean up to use flow that accepts client id
-    fit_response = fit_request.execute()  # empty dict, b/c of app default flow
-    return jsonify(**fit_response)
 
 
 @app.route('/lastfm')
