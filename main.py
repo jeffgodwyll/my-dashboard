@@ -45,7 +45,7 @@ def oauth2callback():
             'POST', 'https://www.googleapis.com/oauth2/v4/token', fields=fields,
             encode_multipart=False)
         session['credentials'] = r.data  # r.text?
-        return redirect(url_for('fit_again'))
+        return redirect(url_for('fit'))
 
 
 @app.route('/stackoverflow')
@@ -62,8 +62,8 @@ def stackoverflow():
     return jsonify(json.loads(r.data))
 
 
-@app.route('/fit2')
-def fit_again():
+@app.route('/fit')
+def fit():
     if 'credentials' not in session:
         return redirect(url_for('oauth2callback'))
     credentials = json.loads(session['credentials'])
