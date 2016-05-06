@@ -59,7 +59,9 @@ def stackoverflow():
                    app.config['STACKOVERFLOW_USER_ID'],
                    '!0Z-LvhH.LNOKu1BHWnIjY_iHH'))
     r = http.request('GET', req_uri)
-    return jsonify(json.loads(r.data))
+    resp = json.loads(r.data)
+    logger.info('stackoverflow info: {}'.format(resp['items'][0]))
+    return jsonify(resp)
 
 
 @app.route('/fit')
