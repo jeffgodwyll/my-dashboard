@@ -1,16 +1,13 @@
-import simplejson as json
 import logging
-
 import xml.etree.ElementTree as ET
-
 from copy import copy
 
+import simplejson as json
 import twitter
 
+from flask import Flask, jsonify, request, redirect, session, url_for
 from urllib3 import PoolManager
 from urllib3.contrib.appengine import AppEngineManager, is_appengine_sandbox
-
-from flask import Flask, jsonify, request, redirect, session, url_for
 
 import config
 
