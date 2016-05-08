@@ -1,6 +1,10 @@
 import simplejson as json
 import logging
 
+import xml.etree.ElementTree as ET
+
+from copy import copy
+
 import twitter
 
 from urllib3 import PoolManager
@@ -16,6 +20,24 @@ app.config.from_object(config)
 app.secret_key = app.config['SECRET_KEY']
 
 logger = logging.getLogger(__name__)
+
+
+def dictify(r, root=True):
+    ''' Parses xml entities as dict regardless of attributes
+
+    Courtesy: http://stackoverflow.com/a/30923963/2295256
+    '''
+    # TODO: Clean up to avoid 1 list items in result
+    if root:
+        return {r.tag: dictify(r, False)}
+    d = copy(r.attrib)
+    if r.text:
+        d["_text"] = r.text
+    for x in r.findall("./*"):
+        if x.tag not in d:
+            d[x.tag] = []
+        d[x.tag].append(dictify(x, False))
+    return d
 
 
 @app.route('/oauth2callback')
@@ -84,6 +106,40 @@ def fit():
         r = http.request('GET', req_uri, headers=headers)
         resp = json.loads(r.data.decode('utf-8'))
         return jsonify(**resp)
+
+
+@app.route('/goodreads')
+def goodreads():
+    if is_appengine_sandbox:
+        http = AppEngineManager()
+    else:
+        http = PoolManager()
+    req = http.request(
+        'GET', 'https://www.goodreads.com/user/show/{}.xml?key={}'.format(
+            app.config['GOODREADS_USERID'], app.config['GOODREADS_KEY']))
+    r = dictify(ET.fromstring(req.data))
+    # r1 = ET.fromstring(req.data)
+    print r
+    user = r['GoodreadsResponse']['user'][0]
+    friends_count = int(user['friends_count'][0]['_text'])
+    # friends_count = int(r1[1].find('friends_count').text)
+    reviews_count = int(user['reviews_count'][0]['_text'])
+    # reviews_count = int(r1[1].find('reviews_count').text)
+    fav_genres = user['favorite_books'][0]['_text'].split(', ')
+    shelves = user['user_shelves'][0]['user_shelf']
+    shelf_info = {
+        shelf['name'][0]['_text']: int(shelf['book_count'][0]['_text'])
+        for shelf in shelves}
+    stats = {
+        'friendsCount': friends_count,
+        'reviewsCount': reviews_count,
+        'books': {
+            'numberShelves': len(shelves),
+            'shelves': shelf_info,
+        },
+        'favoriteGenres': fav_genres,
+    }
+    return jsonify(**stats)
 
 
 @app.route('/lastfm')
