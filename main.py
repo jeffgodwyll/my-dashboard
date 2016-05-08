@@ -118,13 +118,9 @@ def goodreads():
         'GET', 'https://www.goodreads.com/user/show/{}.xml?key={}'.format(
             app.config['GOODREADS_USERID'], app.config['GOODREADS_KEY']))
     r = dictify(ET.fromstring(req.data))
-    # r1 = ET.fromstring(req.data)
-    print r
     user = r['GoodreadsResponse']['user'][0]
     friends_count = int(user['friends_count'][0]['_text'])
-    # friends_count = int(r1[1].find('friends_count').text)
     reviews_count = int(user['reviews_count'][0]['_text'])
-    # reviews_count = int(r1[1].find('reviews_count').text)
     fav_genres = user['favorite_books'][0]['_text'].split(', ')
     shelves = user['user_shelves'][0]['user_shelf']
     shelf_info = {
