@@ -135,6 +135,23 @@ def goodreads():
     return jsonify(**stats)
 
 
+@app.route('/hn')
+def hacker_news():
+    if is_appengine_sandbox:
+        http = AppEngineManager()
+    else:
+        http = PoolManager()
+    r = http.request('GET',
+                     'https://hacker-news.firebaseio.com/v0/user/rey12rey.json')
+    resp = json.loads(r.data)
+    print type(resp)
+    hn = {
+        'karma': resp['karma'],
+        'noLinksSubmitted': len(resp['submitted']),
+    }
+    return jsonify(**hn)
+
+
 @app.route('/lastfm')
 def lastfm_tracks_scrobbled():
     fields = {
