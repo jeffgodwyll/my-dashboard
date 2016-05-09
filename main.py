@@ -141,8 +141,9 @@ def hacker_news():
         http = AppEngineManager()
     else:
         http = PoolManager()
-    r = http.request('GET',
-                     'https://hacker-news.firebaseio.com/v0/user/rey12rey.json')
+    r = http.request(
+        'GET', 'https://hacker-news.firebaseio.com/v0/user/{}.json'.format(
+            app.config['HN_USER']))
     resp = json.loads(r.data)
     print type(resp)
     hn = {
