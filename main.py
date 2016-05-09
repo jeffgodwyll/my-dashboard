@@ -37,6 +37,16 @@ def dictify(r, root=True):
     return d
 
 
+def http():
+    if is_appengine_sandbox:
+        http = AppEngineManager()
+    else:
+        http = PoolManager()
+    return http
+
+http = http()
+
+
 @app.route('/oauth2callback')
 def oauth2callback():
     if 'code' not in request.args:
@@ -55,11 +65,6 @@ def oauth2callback():
                   'redirect_uri': app.config['GOOGLE_REDIRECT_URI'],
                   'grant_type': 'authorization_code'
                   }
-        if is_appengine_sandbox:
-            http = AppEngineManager()
-        else:
-            http = PoolManager()
-
         r = http.request_encode_body(
             'POST', 'https://www.googleapis.com/oauth2/v4/token', fields=fields,
             encode_multipart=False)
@@ -69,10 +74,6 @@ def oauth2callback():
 
 @app.route('/stackoverflow')
 def stackoverflow():
-    if is_appengine_sandbox:
-        http = AppEngineManager()
-    else:
-        http = PoolManager()
     req_uri = ('https://api.stackexchange.com/2.2/users/{}?order=desc&'
                'sort=reputation&site=stackoverflow&filter={}'.format(
                    app.config['STACKOVERFLOW_USER_ID'],
@@ -95,11 +96,6 @@ def fit():
             'Authorization': 'Bearer {}'.format(credentials['access_token'])}
         req_uri = 'https://www.googleapis.com/fitness/v1/users/me/dataSources'
 
-        if is_appengine_sandbox:
-            http = AppEngineManager()
-        else:
-            http = PoolManager()
-
         r = http.request('GET', req_uri, headers=headers)
         resp = json.loads(r.data.decode('utf-8'))
         return jsonify(**resp)
@@ -107,10 +103,6 @@ def fit():
 
 @app.route('/goodreads')
 def goodreads():
-    if is_appengine_sandbox:
-        http = AppEngineManager()
-    else:
-        http = PoolManager()
     req = http.request(
         'GET', 'https://www.goodreads.com/user/show/{}.xml?key={}'.format(
             app.config['GOODREADS_USERID'], app.config['GOODREADS_KEY']))
@@ -137,10 +129,6 @@ def goodreads():
 
 @app.route('/hn')
 def hacker_news():
-    if is_appengine_sandbox:
-        http = AppEngineManager()
-    else:
-        http = PoolManager()
     r = http.request(
         'GET', 'https://hacker-news.firebaseio.com/v0/user/{}.json'.format(
             app.config['HN_USER']))
@@ -161,11 +149,6 @@ def lastfm_tracks_scrobbled():
         'api_key': app.config['LASTFM_API_KEY'],
         'format': 'json'
     }
-
-    if is_appengine_sandbox():
-        http = AppEngineManager()
-    else:
-        http = PoolManager()
 
     url = 'http://ws.audioscrobbler.com/2.0'
     r = http.request('GET', url, fields=fields)
