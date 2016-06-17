@@ -1,3 +1,4 @@
+import datetime
 import time
 import logging
 import xml.etree.ElementTree as ET
@@ -16,6 +17,8 @@ from apiclient.discovery import build
 
 import config
 
+NOW = int(time.time()*1000)
+START = NOW - 1000*60*60*24
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -129,6 +132,22 @@ def fit_datasets():
         }
     ).execute()
     return datasets
+
+
+@app.route('/slept')
+def sleep():
+    """no of hours slept in a day
+    """
+    sessions = fit_sessions()
+    duration = 0
+    for session in sessions['session']:
+        start_sleep = int(session['startTimeMillis'])
+        end_sleep = int(session['endTimeMillis'])
+        if session['activityType'] == 72 and start_sleep >= START:
+            duration += (end_sleep - start_sleep)
+
+    return jsonify(
+        dict(hrs_slept=str(datetime.timedelta(milliseconds=duration))))
 
 
 @app.route('/steps')
