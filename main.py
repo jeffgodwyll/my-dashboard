@@ -96,6 +96,12 @@ def fit_datasources():
     return datasources
 
 
+def fit_sessions():
+    """return fit sessions"""
+    service = fit_client()
+    sessions = service.users().sessions().list(userId='me').execute()
+    return sessions
+
 
 def fit_datasets():
     """Fit datasets
