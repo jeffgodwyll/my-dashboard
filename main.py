@@ -6,7 +6,7 @@ from copy import copy
 import simplejson as json
 import twitter
 
-from flask import Flask, jsonify, request, redirect, session, url_for
+from flask import Flask, jsonify
 from urllib3 import PoolManager
 from urllib3.contrib.appengine import AppEngineManager, is_appengine_sandbox
 import httplib2
