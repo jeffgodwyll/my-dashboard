@@ -1,3 +1,4 @@
+import time
 import logging
 import xml.etree.ElementTree as ET
 from copy import copy
@@ -8,6 +9,10 @@ import twitter
 from flask import Flask, jsonify, request, redirect, session, url_for
 from urllib3 import PoolManager
 from urllib3.contrib.appengine import AppEngineManager, is_appengine_sandbox
+import httplib2
+from oauth2client import GOOGLE_TOKEN_URI
+from oauth2client.client import GoogleCredentials
+from apiclient.discovery import build
 
 import config
 
@@ -84,6 +89,36 @@ def stackoverflow():
     return jsonify(resp)
 
 
+################################################################################
+# Google Fit
+def fit_client():
+    """ build google fit service
+    """
+
+    credentials = GoogleCredentials(
+        access_token=None,
+        client_id=app.config['GOOGLE_CLIENT_ID'],
+        client_secret=app.config['GOOGLE_CLIENT_SECRET'],
+        refresh_token=app.config['GOOGLE_REFRESH_TOKEN'],
+        token_expiry=None,
+        token_uri=GOOGLE_TOKEN_URI,
+        user_agent="My Dashboard",
+    )
+    http = httplib2.Http()
+    http = credentials.authorize(http)
+
+    return build('fitness', 'v1', http=http)
+
+
+def fit_datasources():
+    """fit datasources
+
+    :returns: fit datasources
+
+    """
+    service = fit_client()
+    datasources = service.users().dataSources().list(userId='me').execute()
+    return datasources
 @app.route('/fit')
 def fit():
     if 'credentials' not in session:
@@ -99,6 +134,53 @@ def fit():
         r = http.request('GET', req_uri, headers=headers)
         resp = json.loads(r.data.decode('utf-8'))
         return jsonify(**resp)
+
+
+def fit_datasets():
+    """Fit datasets
+
+    :returns: google fit datasets
+
+    """
+    service = fit_client()
+    now = int(time.time()*1000)
+    start = now - 1000*60*60*24
+    datasets = service.users().dataset().aggregate(
+        userId='me',
+        body={
+            'aggregateBy': [{
+                'dataSourceId':
+                app.config['GOOGLE_FIT_SOURCE'],
+            }],
+            'startTimeMillis': start,
+            'endTimeMillis': now,
+            'bucketByTime': {
+                'durationMillis': 86400000,
+                'period': 'day'
+            },
+            # 1 day = 86400000, 1hr = 3600000
+        }
+    ).execute()
+    return datasets
+
+
+@app.route('/fit2')
+def fit2():
+    dataset = fit_datasets()
+    buckets = dataset['bucket']
+    total_steps = 0
+    for bucket in buckets:
+        for dataset in bucket['dataset']:
+            steps = int(dataset['point'][0]['value'][0]['intVal'])
+            total_steps += steps
+    return jsonify(dict(dataset=dataset))
+
+
+@app.route('/fit_sources')
+def fit_sources():
+    sources = fit_datasources()
+    return jsonify(dict(sources))
+################################################################################
 
 
 @app.route('/goodreads')
