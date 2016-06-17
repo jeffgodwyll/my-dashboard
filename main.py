@@ -131,16 +131,15 @@ def fit_datasets():
     return datasets
 
 
-@app.route('/fit2')
+@app.route('/steps')
 def fit2():
     dataset = fit_datasets()
     buckets = dataset['bucket']
     total_steps = 0
     for bucket in buckets:
         for dataset in bucket['dataset']:
-            steps = int(dataset['point'][0]['value'][0]['intVal'])
-            total_steps += steps
-    return jsonify(dict(dataset=dataset))
+            total_steps += int(dataset['point'][0]['value'][0]['intVal'])
+    return jsonify(dict(steps=total_steps))
 
 
 @app.route('/fit_sources')
