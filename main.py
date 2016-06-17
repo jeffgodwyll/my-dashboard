@@ -159,11 +159,6 @@ def fit2():
             total_steps += int(dataset['point'][0]['value'][0]['intVal'])
     return jsonify(dict(steps=total_steps))
 
-
-@app.route('/fit_sources')
-def fit_sources():
-    sources = fit_datasources()
-    return jsonify(dict(sources))
 ################################################################################
 
 
