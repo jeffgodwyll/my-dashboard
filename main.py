@@ -113,8 +113,7 @@ def fit_datasets():
 
     """
     service = fit_client()
-    now = int(time.time()*1000)
-    start = now - 1000*60*60*24
+
     datasets = service.users().dataset().aggregate(
         userId='me',
         body={
@@ -122,8 +121,8 @@ def fit_datasets():
                 'dataSourceId':
                 app.config['GOOGLE_FIT_SOURCE'],
             }],
-            'startTimeMillis': start,
-            'endTimeMillis': now,
+            'startTimeMillis': START,
+            'endTimeMillis': NOW,
             'bucketByTime': {
                 'durationMillis': 86400000,
                 'period': 'day'
