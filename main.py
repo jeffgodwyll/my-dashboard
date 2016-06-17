@@ -45,6 +45,12 @@ def dictify(r, root=True):
     return d
 
 
+def millis_to_human(millis):
+    """Convert milliseconds to human readable format
+    """
+    return str(datetime.timedelta(milliseconds=millis))
+
+
 def http():
     if is_appengine_sandbox:
         http = AppEngineManager()
@@ -146,7 +152,7 @@ def sleep():
             duration += (end_sleep - start_sleep)
 
     return jsonify(
-        dict(hrs_slept=str(datetime.timedelta(milliseconds=duration))))
+        dict(hrs_slept=millis_to_human(duration)))
 
 
 @app.route('/steps')
