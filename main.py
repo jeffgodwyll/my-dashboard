@@ -27,6 +27,9 @@ app.secret_key = app.config['SECRET_KEY']
 logger = logging.getLogger(__name__)
 
 
+################################################################################
+# Utils
+
 def dictify(r, root=True):
     ''' Parses xml entities as dict regardless of attributes
 
@@ -61,6 +64,8 @@ def http():
 http = http()
 
 
+################################################################################
+# Stackoverflow
 @app.route('/stackoverflow')
 def stackoverflow():
     req_uri = ('https://api.stackexchange.com/2.2/users/{}?order=desc&'
@@ -165,9 +170,9 @@ def fit2():
             total_steps += int(dataset['point'][0]['value'][0]['intVal'])
     return jsonify(dict(steps=total_steps))
 
+
 ################################################################################
-
-
+# Goodreads
 @app.route('/goodreads')
 def goodreads():
     req = http.request(
@@ -194,6 +199,8 @@ def goodreads():
     return jsonify(**stats)
 
 
+################################################################################
+# Hacker News
 @app.route('/hn')
 def hacker_news():
     r = http.request(
@@ -208,6 +215,8 @@ def hacker_news():
     return jsonify(**hn)
 
 
+################################################################################
+# Lastfm
 @app.route('/lastfm')
 def lastfm_tracks_scrobbled():
     fields = {
@@ -226,6 +235,8 @@ def lastfm_tracks_scrobbled():
     return jsonify(tracks_scrobbled=tracks_scrobbled)
 
 
+################################################################################
+# Twitter
 def twitter_client():
     token = app.config['TWITTER_TOKEN']
     token_secret = app.config['TWITTER_TOKEN_SECRET']
