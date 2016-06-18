@@ -4,6 +4,8 @@ import logging
 import xml.etree.ElementTree as ET
 from copy import copy
 
+from google.appengine.ext import ndb
+
 import simplejson as json
 import twitter
 
@@ -62,6 +64,22 @@ def http():
     return http
 
 http = http()
+
+
+################################################################################
+# Models
+
+class Details(ndb.Model):
+
+    """Docstring for Details. """
+    twitter = ndb.JsonProperty(required=False)
+    hn = ndb.JsonProperty(required=False)
+    slept = ndb.JsonProperty(required=False)
+    steps = ndb.JsonProperty(required=False)
+    stackoverflow = ndb.JsonProperty(required=False)
+    lastfm = ndb.JsonProperty(required=False)
+    goodreads = ndb.JsonProperty(required=False)
+    date = ndb.DateTimeProperty(auto_now_add=True)
 
 
 ################################################################################
@@ -255,6 +273,20 @@ def twitter_stats():
         follower_count, tweet_count)
     )
     return jsonify(**twitter)
+
+
+@app.route('/cron')
+def getall():
+    details = Details()
+    details.twitter = twitter_stats()
+    details.hn = hacker_news()
+    details.goodreads = goodreads()
+    details.lastfm = lastfm_tracks_scrobbled()
+    details.stackoverflow = stackoverflow()
+    details.sleep = sleep()
+    details.steps = steps()
+    details.put()
+    return 'done'
 
 
 # TODO: save follower count with time to track changes over a period
