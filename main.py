@@ -66,7 +66,6 @@ http = http()
 
 ################################################################################
 # Stackoverflow
-@app.route('/stackoverflow')
 def stackoverflow():
     req_uri = ('https://api.stackexchange.com/2.2/users/{}?order=desc&'
                'sort=reputation&site=stackoverflow&filter={}'.format(
@@ -144,9 +143,8 @@ def fit_datasets():
     return datasets
 
 
-@app.route('/slept')
 def sleep():
-    """no of hours slept in a day
+    """ return number no of hours slept in a day
     """
     sessions = fit_sessions()
     duration = 0
@@ -160,8 +158,7 @@ def sleep():
         dict(hrs_slept=millis_to_human(duration)))
 
 
-@app.route('/steps')
-def fit2():
+def steps():
     dataset = fit_datasets()
     buckets = dataset['bucket']
     total_steps = 0
@@ -173,7 +170,6 @@ def fit2():
 
 ################################################################################
 # Goodreads
-@app.route('/goodreads')
 def goodreads():
     req = http.request(
         'GET', 'https://www.goodreads.com/user/show/{}.xml?key={}'.format(
@@ -201,7 +197,6 @@ def goodreads():
 
 ################################################################################
 # Hacker News
-@app.route('/hn')
 def hacker_news():
     r = http.request(
         'GET', 'https://hacker-news.firebaseio.com/v0/user/{}.json'.format(
@@ -217,7 +212,6 @@ def hacker_news():
 
 ################################################################################
 # Lastfm
-@app.route('/lastfm')
 def lastfm_tracks_scrobbled():
     fields = {
         'method': 'user.getRecentTracks',
@@ -248,8 +242,7 @@ def twitter_client():
     return client
 
 
-@app.route('/twitter')
-def twitter_details():
+def twitter_stats():
     service = twitter_client()
     req = service.statuses.user_timeline()
     follower_count = req[0]['user']['followers_count']
