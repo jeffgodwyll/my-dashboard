@@ -9,7 +9,7 @@ from google.appengine.ext import ndb
 import simplejson as json
 import twitter
 
-from flask import Flask, jsonify
+from flask import Flask
 from urllib3 import PoolManager
 from urllib3.contrib.appengine import AppEngineManager, is_appengine_sandbox
 import httplib2
@@ -68,7 +68,6 @@ http = http()
 
 ################################################################################
 # Models
-
 class Details(ndb.Model):
 
     """Docstring for Details. """
@@ -92,7 +91,7 @@ def stackoverflow():
     r = http.request('GET', req_uri)
     resp = json.loads(r.data)
     logger.info('stackoverflow info: {}'.format(resp['items'][0]))
-    return jsonify(resp)
+    return json.dumps(resp)
 
 
 ################################################################################
@@ -100,7 +99,6 @@ def stackoverflow():
 def fit_client():
     """ build google fit service
     """
-
     credentials = GoogleCredentials(
         access_token=None,
         client_id=app.config['GOOGLE_CLIENT_ID'],
@@ -171,19 +169,18 @@ def sleep():
         end_sleep = int(session['endTimeMillis'])
         if session['activityType'] == 72 and start_sleep >= START:
             duration += (end_sleep - start_sleep)
-
-    return jsonify(
-        dict(hrs_slept=millis_to_human(duration)))
+    return duration
 
 
 def steps():
     dataset = fit_datasets()
     buckets = dataset['bucket']
-    total_steps = 0
+    steps = 0
     for bucket in buckets:
         for dataset in bucket['dataset']:
-            total_steps += int(dataset['point'][0]['value'][0]['intVal'])
-    return jsonify(dict(steps=total_steps))
+            steps += int(dataset['point'][0]['value'][0]['intVal'])
+    print 'steps are: ', steps
+    return steps
 
 
 ################################################################################
@@ -210,7 +207,7 @@ def goodreads():
         },
         'favoriteGenres': fav_genres,
     }
-    return jsonify(**stats)
+    return json.dumps(stats)
 
 
 ################################################################################
@@ -221,16 +218,16 @@ def hacker_news():
             app.config['HN_USER']))
     resp = json.loads(r.data)
     print type(resp)
-    hn = {
-        'karma': resp['karma'],
-        'noLinksSubmitted': len(resp['submitted']),
-    }
-    return jsonify(**hn)
+    karma = resp['karma']
+    links = resp['submitted']
+    return karma, links
 
 
 ################################################################################
 # Lastfm
 def lastfm_tracks_scrobbled():
+    """no of tracks scrobbled
+    """
     fields = {
         'method': 'user.getRecentTracks',
         'user': app.config['LASTFM_USER'],
@@ -242,9 +239,9 @@ def lastfm_tracks_scrobbled():
     r = http.request('GET', url, fields=fields)
     resp = json.loads(r.data.decode('utf8'))
     # interested in the total for now, till "'from': 'date' is used in request
-    tracks_scrobbled = resp['recenttracks']['@attr']['total']
-    logger.info('lastfm tracks scrobbled: {}'.format(tracks_scrobbled))
-    return jsonify(tracks_scrobbled=tracks_scrobbled)
+    scrobbled = resp['recenttracks']['@attr']['total']
+    logger.info('lastfm tracks scrobbled: {}'.format(scrobbled))
+    return scrobbled
 
 
 ################################################################################
@@ -261,18 +258,16 @@ def twitter_client():
 
 
 def twitter_stats():
+    """
+    :returns: number of followers and number of tweets
+    """
     service = twitter_client()
     req = service.statuses.user_timeline()
-    follower_count = req[0]['user']['followers_count']
-    tweet_count = req[0]['user']['statuses_count']
-    twitter = {
-        'follower_count': follower_count,
-        'tweet_count': tweet_count,
-    }
+    followers = req[0]['user']['followers_count']
+    tweets = req[0]['user']['statuses_count']
     logger.info('you have {0} followers and {1} tweets'.format(
-        follower_count, tweet_count)
-    )
-    return jsonify(**twitter)
+        followers, tweets))
+    return (followers, tweets)
 
 
 @app.route('/cron')
@@ -287,10 +282,6 @@ def getall():
     details.steps = steps()
     details.put()
     return 'done'
-
-
-# TODO: save follower count with time to track changes over a period
-# likewise for tweet count, can save such values in the datastore
 
 
 if __name__ == '__main__':
