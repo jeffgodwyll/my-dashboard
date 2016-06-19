@@ -33,7 +33,7 @@ class Details(ndb.Model):
     """Docstring for Details. """
     twitter = ndb.JsonProperty(required=False)
     hn = ndb.JsonProperty(required=False)
-    slept = ndb.JsonProperty(required=False)
+    sleep = ndb.JsonProperty(required=False)
     steps = ndb.JsonProperty(required=False)
     stackoverflow = ndb.JsonProperty(required=False)
     lastfm = ndb.JsonProperty(required=False)
