@@ -1,0 +1,4 @@
+cron:
+- description: update activities once a day
+  url: /cron
+  schedule: every day 12:00
