@@ -12,6 +12,7 @@ def stats():
             app.config['HN_USER']))
     resp = json.loads(r.data)
     print type(resp)
-    karma = resp.get('karma', 0)
-    links = resp.get('submitted', 0)
+    karma = int(resp.get('karma', 0))
+    links = len(resp.get('submitted', 0))
+    print links
     return karma, links

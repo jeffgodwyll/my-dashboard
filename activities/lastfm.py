@@ -20,6 +20,6 @@ def scrobbled():
     r = http.request('GET', url, fields=fields)
     resp = json.loads(r.data.decode('utf8'))
     # interested in the total for now, till "'from': 'date' is used in request
-    scrobbled = resp['recenttracks']['@attr']['total']
+    scrobbled = int(resp['recenttracks']['@attr']['total'])
     logger.info('lastfm tracks scrobbled: {}'.format(scrobbled))
     return scrobbled

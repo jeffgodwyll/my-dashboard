@@ -30,14 +30,16 @@ TEMPLATE = """
 ################################################################################
 # Models
 class Details(ndb.Model):
-    """Docstring for Details. """
-    twitter = ndb.JsonProperty(required=False)
-    hn = ndb.JsonProperty(required=False)
-    sleep = ndb.JsonProperty(required=False)
-    steps = ndb.JsonProperty(required=False)
-    stackoverflow = ndb.JsonProperty(required=False)
-    lastfm = ndb.JsonProperty(required=False)
-    goodreads = ndb.JsonProperty(required=False)
+    """Details. """
+    twitter_followers = ndb.IntegerProperty(required=False)
+    tweets = ndb.IntegerProperty(required=False)
+    hn_karma = ndb.IntegerProperty(required=False)
+    hn_links = ndb.IntegerProperty(required=False)
+    sleep = ndb.IntegerProperty(required=False)
+    steps = ndb.IntegerProperty(required=False)
+    stackoverflow = ndb.JsonProperty(compressed=True, required=False)
+    tracks_scrobbled = ndb.IntegerProperty(required=False)
+    goodreads = ndb.JsonProperty(compressed=True, required=False)
     date = ndb.DateTimeProperty(auto_now_add=True)
 
 
@@ -51,11 +53,15 @@ def home():
 
 @app.route('/cron')
 def detall():
+    twitter_followers, tweets = twitter.stats()
+    hn_karma, hn_links = hn.stats()
     details = Details()
-    details.twitter = twitter.stats()
-    details.hn = hn.stats()
+    details.twitter_followers = twitter_followers
+    details.tweets = tweets
+    details.hn_karma = hn_karma
+    details.hn_links = hn_links
     details.goodreads = goodreads.stats()
-    details.lastfm = lastfm.scrobbled()
+    details.tracks_scrobbled = lastfm.scrobbled()
     details.stackoverflow = stackoverflow.stats()
     details.sleep = googlefit.sleep()
     details.steps = googlefit.steps()
