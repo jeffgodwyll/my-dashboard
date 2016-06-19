@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import twitter as tw
 from main import app, logger
 
