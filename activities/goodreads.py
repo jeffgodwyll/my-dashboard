@@ -8,7 +8,7 @@ from utils import dictify, http
 http = http()
 
 
-def goodreads():
+def stats():
     req = http.request(
         'GET', 'https://www.goodreads.com/user/show/{}.xml?key={}'.format(
             app.config['GOODREADS_USERID'], app.config['GOODREADS_KEY']))

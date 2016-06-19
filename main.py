@@ -54,7 +54,7 @@ def detall():
     details = Details()
     details.twitter = twitter.stats()
     details.hn = hn.stats()
-    details.goodreads = goodreads()
+    details.goodreads = goodreads.stats()
     details.lastfm = lastfm.scrobbled()
     details.stackoverflow = stackoverflow.stats()
     details.sleep = googlefit.sleep()
