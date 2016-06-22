@@ -6,11 +6,13 @@ from flask import Flask
 from flask import render_template_string
 
 import config
+from utils import millis_to_time
 
 
 app = Flask(__name__)
 app.config.from_object(config)
 app.secret_key = app.config['SECRET_KEY']
+app.jinja_env.filters['millis'] = millis_to_time
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +22,20 @@ from activities import goodreads, googlefit, hn, lastfm, stackoverflow, twitter
 TEMPLATE = """
 {% for detail in details %}
 
-<li>{{ detail }}</li>
+<ul>
+<b>Detail No.{{ loop.index }} for {{ detail.date }}</b>
+<li>Number of twitter followers: {{ detail.twitter_followers }}</li>
+<li>Number of tweets: {{ detail.tweets }}</li>
+<li>Hacker News Karma: {{ detail.hn_karma }}</li>
+<li>Number of Hacker News Links Submitted: {{ detail.hn_links }}</li>
+<li>Number of Hours Slept: {{ detail.sleep | millis }}</li>
+<li>Number of Steps: {{ detail.steps }}</li>
+<li>Number of tracks scrobbled: {{ detail.tracks_scrobbled }}</li>
+<li>Stackoverflow info: <code>{{ detail.stackoverflow}}</code></li>
+<li>Goodreads info: <code>{{ detail.goodreads }}</code></li>
+</ul>
+
+</br>
 
 {% endfor %}
 
@@ -41,6 +56,10 @@ class Details(ndb.Model):
     tracks_scrobbled = ndb.IntegerProperty(required=False)
     goodreads = ndb.JsonProperty(compressed=True, required=False)
     date = ndb.DateTimeProperty(auto_now_add=True)
+
+
+class Slept(ndb.Model):
+    sleep = ndb.IntegerProperty(required=False)
 
 
 ################################################################################
