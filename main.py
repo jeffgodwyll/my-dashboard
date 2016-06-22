@@ -58,10 +58,6 @@ class Details(ndb.Model):
     date = ndb.DateTimeProperty(auto_now_add=True)
 
 
-class Slept(ndb.Model):
-    sleep = ndb.IntegerProperty(required=False)
-
-
 ################################################################################
 # Routes
 @app.route('/')
