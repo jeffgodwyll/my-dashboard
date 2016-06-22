@@ -1,17 +1,12 @@
-import time
-
 from oauth2client import GOOGLE_TOKEN_URI
 from oauth2client.client import GoogleCredentials
 from apiclient.discovery import build
 import httplib2
 
 from main import app, logger
-from utils import http
+from utils import http, now, yesterday_millis
 
 http = http()
-
-NOW = int(time.time()*1000)
-START = NOW - 1000*60*60*24
 
 
 def fit_client():
@@ -65,8 +60,8 @@ def fit_datasets():
                 'dataSourceId':
                 app.config['GOOGLE_FIT_SOURCE'],
             }],
-            'startTimeMillis': START,
-            'endTimeMillis': NOW,
+            'startTimeMillis': yesterday_millis(),
+            'endTimeMillis': now(),
             'bucketByTime': {
                 'durationMillis': 86400000,
                 'period': 'day'
@@ -85,7 +80,7 @@ def sleep():
     for session in sessions['session']:
         start_sleep = int(session['startTimeMillis'])
         end_sleep = int(session['endTimeMillis'])
-        if session['activityType'] == 72 and start_sleep >= START:
+        if session['activityType'] == 72 and start_sleep >= yesterday_millis():
             duration += (end_sleep - start_sleep)
     return duration
 
@@ -96,6 +91,7 @@ def steps():
     steps = 0
     for bucket in buckets:
         for dataset in bucket['dataset']:
-            steps += int(dataset['point'][0]['value'][0]['intVal'])
+            if 'point' in dataset:
+                steps += int(dataset['point'][0]['value'][0]['intVal'])
     print 'steps are: ', steps
     return steps
