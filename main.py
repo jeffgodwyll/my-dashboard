@@ -6,13 +6,14 @@ from flask import Flask
 from flask import render_template_string
 
 import config
-from utils import millis_to_time
+from utils import millis_to_time, dateformat
 
 
 app = Flask(__name__)
 app.config.from_object(config)
 app.secret_key = app.config['SECRET_KEY']
 app.jinja_env.filters['millis'] = millis_to_time
+app.jinja_env.filters['dateformat'] = dateformat
 
 logger = logging.getLogger(__name__)
 

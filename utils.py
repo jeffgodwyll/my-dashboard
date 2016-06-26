@@ -31,6 +31,12 @@ def http():
     return http
 
 
+def dateformat(value, format='%a, %d %b, %Y'):
+    """format date in templates
+    """
+    return value.strftime(format)
+
+
 def millis_to_time(millis):
     """Convert milliseconds to hours:minutes:seconds string
     """
