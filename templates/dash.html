@@ -1,0 +1,121 @@
+{#
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://dimplejs.org/dist/dimple.v2.2.0.min.js"></script>
+#}
+<script src="static/d3.v3.min.js"></script>
+<script src="static/dimple.v2.2.0.min.js"></script>
+
+<div id="detailsChart"></div>
+<script>
+
+  var data = [
+  {% for detail in details %}
+    {
+      'Date': '{{ loop.index }}',
+      'HN': '{{ detail.hn_karma }}',
+      'Followers': '{{ detail.twitter_followers }}',
+      'Steps': '{{ detail.steps }}'
+    },
+  {% endfor %}
+  ];
+
+  var svg = dimple.newSvg("#detailsChart", 960, 400);
+
+  svg.append("rect")
+    .attr("x", "8px")
+    .attr("y", "8px")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .style("fill", "#2c3e50");
+
+  var myChart = new dimple.chart(svg, data);
+  myChart.setBounds(70, 100, 800, 250)
+
+  // construct axes
+  var x = myChart.addCategoryAxis("x", "Date");
+  var hnAxis = myChart.addMeasureAxis("y", "HN");
+  var followersAxis = myChart.addMeasureAxis("y", "Followers");
+  var stepsAxis = myChart.addMeasureAxis("y", "Steps");
+
+  // Draw Lines
+  var hnLine = myChart.addSeries("Hacker News Karma", dimple.plot.area);
+  var followersLine = myChart.addSeries(
+    "Twitter followers", dimple.plot.area, [x, followersAxis]);
+  var stepsLine = myChart.addSeries(
+    "No of steps taken", dimple.plot.area, [x, stepsAxis]);
+  myChart.addLegend(60, 20, 680, 10, "right");
+
+  svg.selectAll(".dimple-legend-text")
+    .style("font-size", "14px");
+
+  // Show line markers
+  hnLine.lineMarkers = true;
+  followersLine.lineMarkers = true;
+  stepsLine.lineMarkers = true;
+
+  // Draw without any axes
+  x.hidden = true;
+  hnAxis.hidden = true;
+  followersAxis.hidden = true;
+  stepsAxis.hidden = true;
+
+
+  // override the standard tooltip behaviour
+  hnLine.addEventHandler("mouseover", addText);
+  hnLine.addEventHandler("mouseleave", clearText);
+
+  followersLine.addEventHandler("mouseover", addText);
+  followersLine.addEventHandler("mouseleave", clearText);
+
+  stepsLine.addEventHandler("mouseover", addText);
+  stepsLine.addEventHandler("mouseleave", clearText);
+
+  myChart.draw(1000)
+
+  // utils
+  /////////
+
+  // add text to svg on mouseover event to replace tooltips
+  function addText(e) {
+
+    // draw the text information in the top left corner
+    svg.selectAll(".dimple-hover-text")
+      .data([e.xValue, d3.format(",.f")(e.yValue), e.seriesValue[0]])
+        .enter()
+        .append("text")
+        .attr("class", "dimple-hover-text")
+        .attr("x", myChart._xPixels() + myChart._widthPixels() + 50)
+        .attr("y", function(d, i) { return myChart._yPixels() + 20 + i * 25; })
+        .style("font-family", "courier new")
+        .style("text-anchor", "end")
+        .style("font-size", "20px")
+        .style("fill", "#ecf0f1")
+        .style("pointer-events", "none")
+        .text(function (d) { return d; });
+    }
+
+  // clear text after mouseover event
+  function clearText(e) {
+    svg.selectAll(".dimple-hover-text").remove();
+  }
+</script>
+
+</br>
+</br>
+
+{% for detail in details %}
+<ul>
+<b>Detail No.{{ loop.index }} for {{ detail.date }}</b>
+<li>Number of twitter followers: {{ detail.twitter_followers }}</li>
+<li>Number of tweets: {{ detail.tweets }}</li>
+<li>Hacker News Karma: {{ detail.hn_karma }}</li>
+<li>Number of Hacker News Links Submitted: {{ detail.hn_links }}</li>
+<li>Number of Hours Slept: {{ detail.sleep | millis }}</li>
+<li>Number of Steps: {{ detail.steps }}</li>
+<li>Number of tracks scrobbled: {{ detail.tracks_scrobbled }}</li>
+<li>Stackoverflow info: <code>{{ detail.stackoverflow}}</code></li>
+<li>Goodreads info: <code>{{ detail.goodreads }}</code></li>
+</ul>
+
+{% endfor %}
+
