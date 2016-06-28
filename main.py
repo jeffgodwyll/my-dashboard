@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 from activities import goodreads, googlefit, hn, lastfm, stackoverflow, twitter
 
-# TODO: Chekc for Nonetype  for timedelta milliseconds component in | millis
+# TODO: Check for Nonetype  for timedelta milliseconds component in | millis
 # filter, triggered when I hand inserted the values
 
 

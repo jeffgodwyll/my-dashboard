@@ -8,6 +8,10 @@
 <div id="detailsChart"></div>
 <script>
 
+  var HNK = "hacker news karma",
+      TWITTER_FOLLOWERS = "number of twitter followers",
+      STEPS = "number of steps taken"
+
   var data = [
   {% for detail in details %}
     {
@@ -38,12 +42,11 @@
   var stepsAxis = myChart.addMeasureAxis("y", "Steps");
 
   // Draw Lines
-  var hnLine = myChart.addSeries("Hacker News Karma", dimple.plot.area);
+  var hnLine = myChart.addSeries(HNK, dimple.plot.area);
   var followersLine = myChart.addSeries(
-    "Twitter followers", dimple.plot.area, [x, followersAxis]);
+    TWITTER_FOLLOWERS, dimple.plot.area, [x, followersAxis]);
   var stepsLine = myChart.addSeries(
-    "No of steps taken", dimple.plot.area, [x, stepsAxis]);
-  myChart.addLegend(60, 20, 680, 10, "right");
+    STEPS, dimple.plot.area, [x, stepsAxis]);
 
   svg.selectAll(".dimple-legend-text")
     .style("font-size", "14px");
@@ -70,7 +73,34 @@
   stepsLine.addEventHandler("mouseover", addText);
   stepsLine.addEventHandler("mouseleave", clearText);
 
-  myChart.draw(1000)
+  var myLegend = myChart.addLegend(60, 20, 680, 10, "right");
+
+  var seriesDict = {};
+  seriesDict[HNK] = { data: data, series: hnLine, visible: true };
+  seriesDict[TWITTER_FOLLOWERS] =
+    { data: data, series: followersLine, visible: true}
+  seriesDict[STEPS] = { data: data, series: stepsLine, visible: true };
+
+  myChart.draw(1000);
+
+  myChart.legends = [];
+
+  // toggle charts from legend
+  myLegend.shapes.selectAll("rect")
+    .on("click", function(e) {
+      console.log(e);
+      var meta = seriesDict[e.aggField[0]];
+      if (seriesDict[e.aggField[0]].visible) {
+        meta.series.data = [];
+        d3.select(this).style("opacity", 0.2);
+        seriesDict[e.aggField[0]].visible = false;
+      } else {
+          meta.series.data = meta.data;
+          d3.select(this).style("opacity", 1);
+          seriesDict[e.aggField[0]].visible = true;
+      }
+      myChart.draw(1000);
+    });
 
   // utils
   /////////
