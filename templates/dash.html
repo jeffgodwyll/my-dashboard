@@ -48,8 +48,6 @@
   var stepsLine = myChart.addSeries(
     STEPS, dimple.plot.area, [x, stepsAxis]);
 
-  svg.selectAll(".dimple-legend-text")
-    .style("font-size", "14px");
 
   // Show line markers
   hnLine.lineMarkers = true;
@@ -88,7 +86,6 @@
   // toggle charts from legend
   myLegend.shapes.selectAll("rect")
     .on("click", function(e) {
-      console.log(e);
       var meta = seriesDict[e.aggField[0]];
       if (seriesDict[e.aggField[0]].visible) {
         meta.series.data = [];
@@ -101,6 +98,10 @@
       }
       myChart.draw(1000);
     });
+
+  // restyle legend text
+  myLegend.shapes.selectAll("text")
+    .style("fill", "#ecf0f1");
 
   // utils
   /////////
@@ -148,4 +149,3 @@
 </ul>
 
 {% endfor %}
-
