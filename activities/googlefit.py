@@ -91,7 +91,9 @@ def steps():
     steps = 0
     for bucket in buckets:
         for dataset in bucket['dataset']:
-            if 'point' in dataset:
+            try:
                 steps += int(dataset['point'][0]['value'][0]['intVal'])
+            except IndexError:
+                pass
     print 'steps are: ', steps
     return steps
