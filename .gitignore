@@ -62,3 +62,6 @@ config.py
 
 # client secrets json files
 FitDash*
+
+# let's encrypt
+well-known/acme-challenge/

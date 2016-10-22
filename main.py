@@ -3,7 +3,7 @@ import logging
 from google.appengine.ext import ndb
 
 from flask import Flask
-from flask import render_template
+from flask import render_template, send_from_directory
 
 import config
 from utils import millis_to_time, dateformat
@@ -63,6 +63,12 @@ def detall():
     details.steps = googlefit.steps()
     details.put()
     return 'done'
+
+
+@app.route('/.well-known/acme-challenge/<path:path>')
+def acme_challenge(path):
+    return send_from_directory('well-known/acme-challenge',
+                               path, mimetype='text/plain')
 
 
 if __name__ == '__main__':
