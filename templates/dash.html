@@ -10,15 +10,17 @@
 
   var HNK = "hacker news karma",
       TWITTER_FOLLOWERS = "number of twitter followers",
-      STEPS = "number of steps taken"
+      STEPS = "number of steps taken",
+      TRACKS = "number of tracks listened to";
 
   var data = [
   {% for detail in details %}
     {
-      'Date': '{{ loop.index }}',
+      'Date': '{{ detail.date|dateformat(format="%a %b %d") }}',
       'HN': '{{ detail.hn_karma }}',
       'Followers': '{{ detail.twitter_followers }}',
-      'Steps': '{{ detail.steps }}'
+      'Steps': '{{ detail.steps }}',
+      'Tracks': '{{ detail.tracks_scrobbled }}'
     },
   {% endfor %}
   ];
@@ -40,25 +42,31 @@
   var hnAxis = myChart.addMeasureAxis("y", "HN");
   var followersAxis = myChart.addMeasureAxis("y", "Followers");
   var stepsAxis = myChart.addMeasureAxis("y", "Steps");
+  var tracksAxis = myChart.addMeasureAxis("y", "Tracks");
 
   // Draw Lines
-  var hnLine = myChart.addSeries(HNK, dimple.plot.area);
+  var hnLine = myChart.addSeries(HNK, dimple.plot.line);
   var followersLine = myChart.addSeries(
-    TWITTER_FOLLOWERS, dimple.plot.area, [x, followersAxis]);
+    TWITTER_FOLLOWERS, dimple.plot.line, [x, followersAxis]);
   var stepsLine = myChart.addSeries(
-    STEPS, dimple.plot.area, [x, stepsAxis]);
+    STEPS, dimple.plot.line, [x, stepsAxis]);
+  var tracksLine = myChart.addSeries(
+    TRACKS, dimple.plot.line, [x, tracksAxis]);
 
+  x.title = ""
 
   // Show line markers
   hnLine.lineMarkers = true;
   followersLine.lineMarkers = true;
   stepsLine.lineMarkers = true;
+  tracksLine.lineMarkers = true;
 
   // Draw without any axes
-  x.hidden = true;
+  // x.hidden = true;
   hnAxis.hidden = true;
   followersAxis.hidden = true;
   stepsAxis.hidden = true;
+  tracksAxis.hidden = true;
 
 
   // override the standard tooltip behaviour
@@ -71,6 +79,9 @@
   stepsLine.addEventHandler("mouseover", addText);
   stepsLine.addEventHandler("mouseleave", clearText);
 
+  tracksLine.addEventHandler("mouseover", addText);
+  tracksLine.addEventHandler("mouseleave", clearText);
+
   var myLegend = myChart.addLegend(60, 20, 680, 10, "right");
 
   var seriesDict = {};
@@ -78,6 +89,7 @@
   seriesDict[TWITTER_FOLLOWERS] =
     { data: data, series: followersLine, visible: true}
   seriesDict[STEPS] = { data: data, series: stepsLine, visible: true };
+  seriesDict[TRACKS] = { data: data, series: tracksLine, visible: true };
 
   myChart.draw(1000);
 
@@ -103,8 +115,16 @@
   myLegend.shapes.selectAll("text")
     .style("fill", "#ecf0f1");
 
+  // x axis color
+  svg.selectAll(".dimple-axis-x")
+    .style("fill", "#969797");
+
+  svg.selectAll(".dimple-custom-axis-line")
+    .style("stroke", "#969797");
+
   // utils
   /////////
+
 
   // add text to svg on mouseover event to replace tooltips
   function addText(e) {
